@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 var gaze = require('gaze');
 var path = require('path');
 var hamlc = require('haml-coffee');
