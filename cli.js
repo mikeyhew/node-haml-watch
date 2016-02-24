@@ -34,7 +34,7 @@ function onAll (event, hamlFilepath) {
             break;
         case 'deleted':
             console.log(`deleting ${asRelative(htmlFilepath)}`);
-            fs.unlinkSync(htmlFilePath);
+            fs.unlinkSync(htmlFilepath);
             break;
     }
 }
