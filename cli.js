@@ -24,7 +24,12 @@ function onChange(filepath) {
     try {
         haml = fs.readFileSync(hamlFilepath, 'utf-8');
         console.log(`compiling ${asRelative(hamlFilepath)} to ${asRelative(htmlFilepath)}`);
-        html = hamlc.render(haml);
+        try {
+            html = hamlc.render(haml);
+        } catch (err) {
+            console.log('compile failed. Passing along to html file');
+            html = `<pre>${err.stack}</pre>`;
+        }
         fs.writeFileSync(htmlFilepath, html);
     } catch (err) {
         if (err.code === "ENOENT") {
