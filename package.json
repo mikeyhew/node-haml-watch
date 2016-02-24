@@ -1,0 +1,21 @@
+{
+  "name": "haml-watch",
+  "version": "0.1.0",
+  "description": "Watches *.haml files and renders them on change to .html",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mikeyhew/haml-coffee-watch.git"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "bin": {
+    "haml-watch": "./cli.js"
+  },
+  "author": "Michael Hewson",
+  "license": "MIT",
+  "dependencies": {
+    "gaze": "^0.5.2",
+    "haml-coffee": "^1.14.1"
+  }
+}
