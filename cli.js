@@ -5,22 +5,37 @@ var path = require('path');
 var assert = require('util').assert;
 var fs = require('fs');
 var exec = require('child_process').exec;
+var parseArgs = require('minimist');
+var format = require('string-format');
 
-if (process.argv.length === 2) {
+argv = parseArgs(process.argv.slice(2), {
+    string: ['input-extension', 'output-extension', 'command'],
+    default: {
+        'input-extension': '.haml',
+        'output-extension': '.html',
+        'command': 'bundle exec haml {infile} >{outfile}'
+    },
+});
+
+function usage() {
     console.log("Usage: haml-watch watch-dir [watch-dir...]");
     process.exit(1);
 }
 
-var watchDirs = process.argv.slice(2).map(f => path.resolve(f))
+if (argv._.length < 1) {
+    usage();
+}
+
+var watchDirs = argv._.map(f => path.resolve(f))
 
 watch(watchDirs, onChange);
 
 function onChange(filepath) {
-    if (path.extname(filepath) !== '.haml') {
+    if (!filepath.match(new RegExp(argv['input-extension'] + '$'))) {
         return;
     }
     var hamlFilepath = filepath;
-    var htmlFilepath = hamlFilepath.slice(0, hamlFilepath.length - '.haml'.length) + '.html';
+    var htmlFilepath = hamlFilepath.slice(0, hamlFilepath.length - argv['input-extension'].length) + argv['output-extension'];
     try {
         fs.accessSync(hamlFilepath, fs.R_OK);
     } catch(err) {
@@ -33,7 +48,12 @@ function onChange(filepath) {
         return;
     }
     console.log(`compiling ${asRelative(hamlFilepath)} to ${asRelative(htmlFilepath)}`);
-    exec(`bundle exec haml ${hamlFilepath} >${htmlFilepath}`)
+    var command = format(argv.command, {
+        infile: hamlFilepath,
+        outfile: htmlFilepath,
+    });
+    console.log(command);
+    exec(command)
     .on('error', console.error);
 }
 
