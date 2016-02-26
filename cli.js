@@ -2,9 +2,9 @@
 
 var watch = require('node-watch');
 var path = require('path');
-var hamlc = require('haml-coffee');
 var assert = require('util').assert;
 var fs = require('fs');
+var exec = require('child_process').exec;
 
 if (process.argv.length === 2) {
     console.log("Usage: haml-watch watch-dir [watch-dir...]");
@@ -22,33 +22,21 @@ function onChange(filepath) {
     var hamlFilepath = filepath;
     var htmlFilepath = hamlFilepath.slice(0, hamlFilepath.length - '.haml'.length) + '.html';
     try {
-        haml = fs.readFileSync(hamlFilepath, 'utf-8');
-        console.log(`compiling ${asRelative(hamlFilepath)} to ${asRelative(htmlFilepath)}`);
+        fs.accessSync(hamlFilepath, fs.R_OK);
+    } catch(err) {
+        console.log(`deleting ${asRelative(htmlFilepath)}`);
         try {
-            html = hamlc.render(haml);
-        } catch (err) {
-            console.log('compile failed. Passing along to html file');
-            html = `<pre>${err.stack}</pre>`;
+            fs.unlinkSync(htmlFilepath);
+        } catch (e) {
+            console.log('error deleting file:', e);
         }
-        fs.writeFileSync(htmlFilepath, html);
-    } catch (err) {
-        if (err.code === "ENOENT") {
-            console.log(`deleting ${asRelative(htmlFilepath)}`);
-            try {
-                fs.unlinkSync(htmlFilepath);
-            } catch (err) {
-                if (err.code === "ENOENT") {
-                    console.log(`file ${asRelative(htmlFilepath)} was already deleted.`);
-                } else {
-                    throw(err);
-                }
-            }
-        } else {
-            throw(err);
-        }
+        return;
     }
+    console.log(`compiling ${asRelative(hamlFilepath)} to ${asRelative(htmlFilepath)}`);
+    exec(`bundle exec haml ${hamlFilepath} >${htmlFilepath}`)
+    .on('error', console.error);
 }
 
-function asRelative (filepath) {
+function asRelative(filepath) {
     return path.relative('.', filepath);
 }
